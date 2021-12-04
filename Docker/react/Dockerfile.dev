@@ -1,0 +1,21 @@
+# pull official base image
+FROM node:lts-alpine3.14
+
+# set working directory
+WORKDIR /app
+
+RUN apk add --update python2 make g++\
+   && rm -rf /var/cache/apk/*
+
+# add `/app/node_modules/.bin` to $PATH
+ENV PATH /app/node_modules/.bin:$PATH
+
+# install app dependencies
+COPY package*.json ./
+RUN npm install
+
+# add app
+COPY . ./
+
+# start app
+CMD ["npm", "run", "watch"]

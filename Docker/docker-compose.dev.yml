@@ -1,0 +1,55 @@
+# /wordpress-docker/docker-compose.yml
+version: '3.3'
+services:
+  database:
+    container_name: 'wordpress-mysql'
+    image: 'mysql:5.7'
+    volumes:
+      - './database/data/mysql:/var/lib/mysql'
+    # ports:
+    #   - 3306
+    networks:
+      - database
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress_db
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: wordpress_password
+
+  wordpress:
+    container_name: 'wordpress'
+    depends_on:
+      - database
+    image: 'wordpress:latest'
+    ports:
+      - '8080:80'
+    networks:
+      - default
+      - database
+    environment:
+      WORDPRESS_DB_HOST: 'database:3306'
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: wordpress_password
+      WORDPRESS_DB_NAME: wordpress_db
+    volumes:
+      - "./wordpress/wordpress:/var/www/html"
+      - "./wordpress/plugins:/var/www/html/wp-content/plugins"
+      - "./react/build:/var/www/html/wp-content/themes/react"
+
+  react:
+    container_name: 'wordpress-react'
+    build:
+      context: ./react
+      dockerfile: Dockerfile.dev
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    volumes:
+       - ./react:/app/
+       - ./react/node_modules:/app/node_modules/
+
+networks:
+  database:
+  default:
+
